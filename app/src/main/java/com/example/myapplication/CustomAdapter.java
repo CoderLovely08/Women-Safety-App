@@ -1,6 +1,8 @@
 package com.example.myapplication;
 
 import android.content.Context;
+import android.os.Environment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,7 +16,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class CustomAdapter extends BaseAdapter {
@@ -50,24 +51,36 @@ public class CustomAdapter extends BaseAdapter {
         view = inflater.inflate(R.layout.custom_list, null);
         CheckBox checkBox = view.findViewById(R.id.checkbox);
         checkBox.setText(model.get(i).getContactName().toString());
-
+//        File file = new File(context.getFilesDir(), "ContactsData.txt");
+        File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "ContactsData.txt");
+        if (file.exists()) {
+            System.out.println("Existing file deleted");
+            file.delete();
+        }
         checkBox.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(checkBox.isChecked()) {
+                if (checkBox.isChecked()) {
                     try {
 
-                        File file = new File(context.getFilesDir(), "ContactData.txt");
+                        File file1 = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "my_file.txt");
+                        if (file1.exists()) System.out.println("New file saved");
+                        else System.out.println(file1.getAbsolutePath());
+                        file1.createNewFile();
+                        System.out.println(file1.getAbsolutePath());
+//                        File file = new File(context.getFilesDir(), "ContactsData.txt");
+                        File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "ContactsData.txt");
+
                         FileOutputStream outputStream = new FileOutputStream(file, true);
 
                         String contactName = model.get(i).getContactName();
                         String contactNumber = model.get(i).getContactNumber();
 
-                        String pattern = "[- ()]";
+                        String pattern = "Number:([0-9]*)";
                         String strippedPhoneNumber = contactNumber.replaceAll(pattern, "");
 
-
                         String data = "Name:" + contactName + " Number:" + strippedPhoneNumber + "\n";
+                        System.out.println(data);
                         String line;
                         BufferedReader reader = new BufferedReader(new FileReader(file));
                         boolean found = false;
@@ -80,6 +93,7 @@ public class CustomAdapter extends BaseAdapter {
                         reader.close();
 
                         if (!found) {
+                            System.out.println("Data: " + data + " -----" + strippedPhoneNumber);
                             outputStream.write(data.getBytes());
                             outputStream.close();
                         }
@@ -104,12 +118,6 @@ public class CustomAdapter extends BaseAdapter {
             }
         });
         return view;
-    }
-
-    public List<String> getCheckedItems() {
-        List<String> items = new ArrayList<>();
-
-        return items;
     }
 
 }

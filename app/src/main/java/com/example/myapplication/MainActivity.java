@@ -64,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
     private List<ContactModel> getAllContacts() {
         List<ContactModel> nameList = new ArrayList<>();
         ContentResolver cr = getContentResolver();
-        Cursor cur = cr.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
+        Cursor cur = cr.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, ContactsContract.Contacts.DISPLAY_NAME + " ASC");
         if ((cur != null ? cur.getCount() : 0) > 0) {
             while (cur != null && cur.moveToNext()) {
                 ContactModel mymodel;
@@ -96,10 +96,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void readFile(View v) {
-        File file = new File(getFilesDir(), "ContactData.txt");
+//        File file = new File(getFilesDir(), "ContactsData.txt");
+        File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "ContactsData.txt");
         ArrayList<String> contactNumbersForMessage = new ArrayList<>();
 
-        String pattern = "Number:([0-9]*)";
+        String pattern = "(?<=Number:).*";
         Pattern p = Pattern.compile(pattern);
 
         try {
@@ -108,7 +109,8 @@ public class MainActivity extends AppCompatActivity {
             while ((line = reader.readLine()) != null) {
                 Matcher m = p.matcher(line);
                 if (m.find()) {
-                    String phoneNumber = m.group(1);
+                    String phoneNumber = m.group();
+                    System.out.println(phoneNumber);
                     contactNumbersForMessage.add(phoneNumber);
                 }
             }
