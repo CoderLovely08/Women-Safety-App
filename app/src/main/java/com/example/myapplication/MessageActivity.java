@@ -25,29 +25,31 @@ public class MessageActivity extends AppCompatActivity {
 
     public void readInputMessage(View v){
         TextInputEditText messageInput = findViewById(R.id.inputMessage);
-        Toast.makeText(this, messageInput.getText().toString(), Toast.LENGTH_SHORT).show();
-
-        String data = messageInput.getText().toString().trim();
-        try {
-            File file = new File(getFilesDir(), "MessageFile.txt");
-            FileOutputStream outputStream = new FileOutputStream(file);
-            outputStream.write(data.getBytes());
-            outputStream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Title");
-        builder.setMessage("Are you sure you want to do this?");
+        builder.setTitle("Confirm Submit?");
+        builder.setMessage("Are you sure you want to submit?");
 
         builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 // Perform action when "Yes" button is clicked
-                Toast.makeText(MessageActivity.this, "Message Saved", Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(MessageActivity.this, ThankYouActivity.class);
-                startActivity(intent);
+                String data = messageInput.getText().toString().trim();
+                if(data.length()<=10){
+                    Toast.makeText(MessageActivity.this, "SOS Message too short!", Toast.LENGTH_SHORT).show();
+                }else {
+                    try {
+                        File file = new File(getFilesDir(), "MessageFile.txt");
+                        FileOutputStream outputStream = new FileOutputStream(file);
+                        outputStream.write(data.getBytes());
+                        outputStream.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    Toast.makeText(MessageActivity.this, "Message Saved", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(MessageActivity.this, ThankYouActivity.class);
+                    startActivity(intent);
+                }
             }
         });
 
@@ -55,7 +57,6 @@ public class MessageActivity extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 // Perform action when "No" button is clicked
-                Toast.makeText(MessageActivity.this, "Not Saved", Toast.LENGTH_SHORT).show();
             }
         });
 
