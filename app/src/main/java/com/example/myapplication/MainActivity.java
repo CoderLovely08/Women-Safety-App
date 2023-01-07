@@ -1,23 +1,26 @@
 package com.example.myapplication;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
 
-
-import android.annotation.SuppressLint;
 import android.content.ContentResolver;
-import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.ContactsContract;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,20 +40,34 @@ public class MainActivity extends AppCompatActivity {
         CustomAdapter adapter = new CustomAdapter(this, model);
         list.setAdapter(adapter);
 
-        list.setOnItemClickListener(
-                new AdapterView.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                        CheckBox checkBox = view.findViewById(R.id.checkbox);
-                        boolean isChecked = checkBox.isChecked();
-                        // do something with the checked state
 
-                    }
-                });
-    }
 
-    public void click(View v) {
-        Toast.makeText(this, "Hello", Toast.LENGTH_LONG).show();
+//        String state = Environment.getExternalStorageState();
+//        if (Environment.MEDIA_MOUNTED.equals(state)) {
+//            // External storage is available and writable
+//            Toast.makeText(this, "AW", Toast.LENGTH_SHORT).show();
+//        } else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
+//            // External storage is available and read-only
+//            Toast.makeText(this, "AR", Toast.LENGTH_SHORT).show();
+//        } else {
+//            // External storage is not available
+//            Toast.makeText(this, "NA", Toast.LENGTH_SHORT).show();
+//        }
+
+
+        list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                CheckBox checkBox = view.findViewById(R.id.checkbox);
+                if (checkBox.isChecked()) {
+                    // Checkbox is checked
+                    Toast.makeText(MainActivity.this, "Checkbox is checked", Toast.LENGTH_SHORT).show();
+                } else {
+                    // Checkbox is not checked
+                    Toast.makeText(MainActivity.this, "Checkbox is not checked", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 
     private List<ContactModel> getAllContacts() {
@@ -69,7 +86,7 @@ public class MainActivity extends AppCompatActivity {
                                     ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
                                     null,
                                     ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
-                                    new String[] {id},
+                                    new String[]{id},
                                     null);
                     while (pCur.moveToNext()) {
                         String phoneNo =
@@ -88,11 +105,29 @@ public class MainActivity extends AppCompatActivity {
         }
         return nameList;
     }
-    public void itemClicked(View view) {
-        // code to check if this checkbox is checked!
-        CheckBox checkBox = view.findViewById(R.id.checkbox);
-        if (checkBox.isChecked()) {
-            Toast.makeText(this, checkBox.getText().toString(), Toast.LENGTH_SHORT).show();
+
+    public void readFile(View v) {
+        File file = new File(getFilesDir(), "sample1.txt");
+//        if (file.exists()) {
+//            file.delete();
+//        }
+
+        try {
+            FileInputStream inputStream = new FileInputStream(file);
+            int size = inputStream.available();
+            byte[] buffer = new byte[size];
+            inputStream.read(buffer);
+            inputStream.close();
+
+            // Convert the buffer to a string and print it
+            String text = new String(buffer);
+            Toast.makeText(this, text, Toast.LENGTH_SHORT).show();
+            TextView txt = findViewById(R.id.textView);
+            txt.setText(text.toString());
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+
     }
+
 }

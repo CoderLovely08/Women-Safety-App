@@ -8,21 +8,23 @@ import android.widget.BaseAdapter;
 import android.widget.CheckBox;
 import android.widget.Toast;
 
-import androidx.core.app.ActivityCompat;
-
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class CustomAdapter extends BaseAdapter {
 
     List<ContactModel> model;
-//    ArrayList<String> items;
     Context context;
     LayoutInflater inflater;
 
     public CustomAdapter(Context context, List<ContactModel> model) {
-        this.context= context;
-//        this.items = items;
+        this.context = context;
         this.model = model;
         inflater = LayoutInflater.from(context);
     }
@@ -52,9 +54,63 @@ public class CustomAdapter extends BaseAdapter {
         checkBox.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(context, model.get(i).getContactNumber().toString(), Toast.LENGTH_SHORT).show();
+
+                try {
+
+
+                    File file = new File(context.getFilesDir(), "sample1.txt");
+                    FileOutputStream outputStream = new FileOutputStream(file, true);
+
+                    String contactName = model.get(i).getContactName();
+                    String contactNumber = model.get(i).getContactNumber();
+
+                    String pattern = "[- ()]";
+                    String strippedPhoneNumber = contactNumber.replaceAll(pattern, "");
+
+
+                    String data = "Name:" + contactName + " Number:" + strippedPhoneNumber + "\n";
+                    String line;
+                    BufferedReader reader = new BufferedReader(new FileReader(file));
+                    boolean found = false;
+                    while ((line = reader.readLine()) != null) {
+                        if (line.trim().equals(data.trim())) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    reader.close();
+
+                    if (!found) {
+                        outputStream.write(data.getBytes());
+                        outputStream.close();
+                    }
+
+                    if (file.exists()) {
+                        // File was saved successfully
+                        Toast.makeText(context, "File Saved", Toast.LENGTH_SHORT).show();
+                    } else {
+                        // File was not saved
+                        Toast.makeText(context, "Not saved", Toast.LENGTH_SHORT).show();
+                    }
+                } catch (FileNotFoundException e) {
+                    // File could not be created
+                    Toast.makeText(context, "Unable to create", Toast.LENGTH_SHORT).show();
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    // Error writing to file
+                    Toast.makeText(context, "Unable to write", Toast.LENGTH_SHORT).show();
+                    e.printStackTrace();
+                }
+
             }
         });
         return view;
     }
+
+    public List<String> getCheckedItems() {
+        List<String> items = new ArrayList<>();
+
+        return items;
+    }
+
 }
