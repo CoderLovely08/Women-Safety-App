@@ -7,6 +7,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import com.google.android.material.textfield.TextInputEditText;
@@ -21,6 +23,20 @@ public class MessageActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_message);
+        
+        RadioGroup radioGroup = findViewById(R.id.radioGroup);
+        radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                int selectedId = radioGroup.getCheckedRadioButtonId();
+                RadioButton radioButton = findViewById(selectedId);
+                TextInputEditText messageInput = findViewById(R.id.inputMessage);
+                String radioButtonText = radioButton.getText().toString();
+                messageInput.setText(radioButtonText);
+            }
+        });
+
+
     }
 
     public void readInputMessage(View v){
@@ -62,7 +78,13 @@ public class MessageActivity extends AppCompatActivity {
 
         AlertDialog dialog = builder.create();
         dialog.show();
+    }
 
-
+    public void getTemplate(View view){
+        RadioGroup radioGroup = findViewById(R.id.radioGroup);
+        int selectedId = radioGroup.getCheckedRadioButtonId();
+        RadioButton radioButton = findViewById(selectedId);
+        String radioButtonText = radioButton.getText().toString();
+        Toast.makeText(this, radioButtonText, Toast.LENGTH_SHORT).show();
     }
 }

@@ -1,12 +1,15 @@
 package com.example.myapplication;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -38,16 +41,48 @@ public class HomeActivity extends AppCompatActivity {
 
     private static boolean flag = false;
 
+    private static final String PREFERENCES_NAME = "MyPreferences";
+    private static final String FIRST_LAUNCH = "FirstLaunch";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+
+        SharedPreferences preferences = getSharedPreferences(PREFERENCES_NAME, MODE_PRIVATE);
+        boolean isFirstLaunch = preferences.getBoolean(FIRST_LAUNCH, true);
+
+        if (isFirstLaunch) {
+            showAlertDialogue();
+            SharedPreferences.Editor editor = preferences.edit();
+            editor.putBoolean(FIRST_LAUNCH, false);
+            editor.apply();
+        }
 
         if (!hasPermissions(this, PERMISSIONS)) {
             ActivityCompat.requestPermissions(this, PERMISSIONS, PERMISSION_REQUEST_CODE);
         } else {
             flag = true;
         }
+
+
+
+    }
+
+    private void showAlertDialogue() {
+        String[] steps = {"Step 1: Click on Edit Alert", "Step 2: Select trusted contacts (max 5)", "Step 3: Enter an emergency message and hit submit."};
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("How to Use the App")
+                .setItems(steps, null)
+                .setPositiveButton("Got it!", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // your code here
+                    }
+                });
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 
     @Override
@@ -104,7 +139,6 @@ public class HomeActivity extends AppCompatActivity {
 
 
     public void sendSMSAlert(){
-//        File file = new File(getFilesDir(), "ContactsData.txt");
         ArrayList<String> contactNumbersForMessage = new ArrayList<>();
         File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "ContactsData.txt");
 
@@ -128,8 +162,6 @@ public class HomeActivity extends AppCompatActivity {
         }
         Collections.reverse(contactNumbersForMessage);
 
-        Toast.makeText(this, contactNumbersForMessage.toString(), Toast.LENGTH_SHORT).show();
-
         File messageFile = new File(getFilesDir(), "MessageFile.txt");
         String alertMessage;
         try {
@@ -148,7 +180,7 @@ public class HomeActivity extends AppCompatActivity {
             alertMessage = sb.toString();
 
             SmsManager smsManager = SmsManager.getDefault();
-            int counter = 5;
+            int counter = 4;
             for (String contactNumber : contactNumbersForMessage) {
                 if (counter-- != 0) {
                     smsManager.sendTextMessage(contactNumber, null, alertMessage, null, null);

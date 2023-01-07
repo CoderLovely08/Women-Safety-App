@@ -13,6 +13,7 @@
         android:orientation="vertical"
         android:padding="10dp"
         tools:layout_editor_absoluteX="1dp"
+        android:weightSum="1"
         tools:layout_editor_absoluteY="1dp">
 
         <TextView
@@ -30,23 +31,73 @@
 
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
-            android:layout_height="250dp">
+            android:layout_height="wrap_content">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/inputMessage"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Type an emergency message here..." />
+
+
         </com.google.android.material.textfield.TextInputLayout>
+
+        <TextView
+            android:id="@+id/textView5"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:padding="4dp"
+            android:text="Choose an emergency text from below template."
+            android:textStyle="bold" />
+
+        <RadioGroup
+            android:id="@+id/radioGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="getTemplate">
+
+            <RadioButton
+                android:id="@+id/radioButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Hi, I'm lost and don't know where I am. Could you please help me find my way back home/to my hotel/to the nearest train station/etc.?" />
+
+            <RadioButton
+                android:id="@+id/radioButton2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="I'm sorry to bother you, but I'm having car trouble and need some assistance. Is there a nearby mechanic or tow truck service that you could recommend?" />
+
+            <RadioButton
+                android:id="@+id/radioButton3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="I'm allergic to [insert allergen] and I think I may have accidentally ingested it. Could you please call for medical assistance?" />
+
+            <RadioButton
+                android:id="@+id/radioButton5"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="I'm in a potentially dangerous situation and need immediate help. Please call the police and give them my location." />
+
+            <RadioButton
+                android:id="@+id/radioButton4"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="I'm having a panic attack and need someone to talk to. Could you please stay on the line with me until I feel better?" />
+
+        </RadioGroup>
 
         <Button
             android:id="@+id/button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom|center"
+            android:layout_gravity="bottom"
             android:onClick="readInputMessage"
             android:text="Submit" />
 
 
     </LinearLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
