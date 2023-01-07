@@ -19,21 +19,22 @@ import android.widget.Toast;
 
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
     ListView list;
 
-    ArrayList<String> mobileArray;
+    List<ContactModel> model = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mobileArray = getAllContacts();
+        model = getAllContacts();
         list = findViewById(R.id.list_view);
-        CustomAdapter adapter = new CustomAdapter(this, mobileArray);
+        CustomAdapter adapter = new CustomAdapter(this, model);
         list.setAdapter(adapter);
 
         list.setOnItemClickListener(
@@ -52,12 +53,13 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText(this, "Hello", Toast.LENGTH_LONG).show();
     }
 
-    private ArrayList<String> getAllContacts() {
-        ArrayList<String> nameList = new ArrayList<>();
+    private List<ContactModel> getAllContacts() {
+        List<ContactModel> nameList = new ArrayList<>();
         ContentResolver cr = getContentResolver();
         Cursor cur = cr.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
         if ((cur != null ? cur.getCount() : 0) > 0) {
             while (cur != null && cur.moveToNext()) {
+                ContactModel mymodel;
                 String id = cur.getString(cur.getColumnIndex(ContactsContract.Contacts._ID));
                 String name = cur.getString(cur.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
                 // nameList.add(name);
@@ -72,7 +74,9 @@ public class MainActivity extends AppCompatActivity {
                     while (pCur.moveToNext()) {
                         String phoneNo =
                                 pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-                        nameList.add(phoneNo);
+//                        nameList.add(phoneNo);
+                        mymodel = new ContactModel(name, phoneNo);
+                        nameList.add(mymodel);
                     }
 
                     pCur.close();
