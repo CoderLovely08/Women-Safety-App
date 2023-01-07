@@ -118,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        Toast.makeText(this, contactNumbersForMessage.toString(), Toast.LENGTH_SHORT).show();
+//        Toast.makeText(this, contactNumbersForMessage.toString(), Toast.LENGTH_SHORT).show();
         Intent intent = new Intent(MainActivity.this, MessageActivity.class);
         startActivity(intent);
     }
