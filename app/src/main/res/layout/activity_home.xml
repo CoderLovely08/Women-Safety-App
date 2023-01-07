@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     tools:context=".HomeActivity">
 
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -14,7 +15,7 @@
         <ImageView
             android:id="@+id/imageView"
             android:layout_width="match_parent"
-            android:layout_height="431dp"
+            android:layout_height="430dp"
             android:layout_margin="8dp"
             app:srcCompat="@drawable/home_thumbnail" />
 

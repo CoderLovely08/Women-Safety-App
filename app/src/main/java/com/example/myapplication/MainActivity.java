@@ -70,7 +70,6 @@ public class MainActivity extends AppCompatActivity {
                 ContactModel mymodel;
                 String id = cur.getString(cur.getColumnIndex(ContactsContract.Contacts._ID));
                 String name = cur.getString(cur.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
-                // nameList.add(name);
                 if (cur.getInt(cur.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER)) > 0) {
                     Cursor pCur =
                             cr.query(
@@ -82,7 +81,6 @@ public class MainActivity extends AppCompatActivity {
                     while (pCur.moveToNext()) {
                         String phoneNo =
                                 pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-//                        nameList.add(phoneNo);
                         mymodel = new ContactModel(name, phoneNo);
                         nameList.add(mymodel);
                     }
@@ -100,20 +98,6 @@ public class MainActivity extends AppCompatActivity {
     public void readFile(View v) {
         File file = new File(getFilesDir(), "ContactData.txt");
         ArrayList<String> contactNumbersForMessage = new ArrayList<>();
-//        try {
-//            FileInputStream inputStream = new FileInputStream(file);
-//            int size = inputStream.available();
-//            byte[] buffer = new byte[size];
-//            inputStream.read(buffer);
-//            inputStream.close();
-//
-//            // Convert the buffer to a string and print it
-//            String text = new String(buffer);
-//            Toast.makeText(this, text, Toast.LENGTH_SHORT).show();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-
 
         String pattern = "Number:([0-9]*)";
         Pattern p = Pattern.compile(pattern);
