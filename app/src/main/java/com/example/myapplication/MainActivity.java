@@ -3,6 +3,7 @@ package com.example.myapplication;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.ContentResolver;
+import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Environment;
@@ -16,13 +17,17 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -39,20 +44,6 @@ public class MainActivity extends AppCompatActivity {
         list = findViewById(R.id.list_view);
         CustomAdapter adapter = new CustomAdapter(this, model);
         list.setAdapter(adapter);
-
-
-
-//        String state = Environment.getExternalStorageState();
-//        if (Environment.MEDIA_MOUNTED.equals(state)) {
-//            // External storage is available and writable
-//            Toast.makeText(this, "AW", Toast.LENGTH_SHORT).show();
-//        } else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
-//            // External storage is available and read-only
-//            Toast.makeText(this, "AR", Toast.LENGTH_SHORT).show();
-//        } else {
-//            // External storage is not available
-//            Toast.makeText(this, "NA", Toast.LENGTH_SHORT).show();
-//        }
 
 
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -107,27 +98,42 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void readFile(View v) {
-        File file = new File(getFilesDir(), "sample1.txt");
-//        if (file.exists()) {
-//            file.delete();
+        File file = new File(getFilesDir(), "ContactData.txt");
+        ArrayList<String> contactNumbersForMessage = new ArrayList<>();
+//        try {
+//            FileInputStream inputStream = new FileInputStream(file);
+//            int size = inputStream.available();
+//            byte[] buffer = new byte[size];
+//            inputStream.read(buffer);
+//            inputStream.close();
+//
+//            // Convert the buffer to a string and print it
+//            String text = new String(buffer);
+//            Toast.makeText(this, text, Toast.LENGTH_SHORT).show();
+//        } catch (IOException e) {
+//            e.printStackTrace();
 //        }
 
-        try {
-            FileInputStream inputStream = new FileInputStream(file);
-            int size = inputStream.available();
-            byte[] buffer = new byte[size];
-            inputStream.read(buffer);
-            inputStream.close();
 
-            // Convert the buffer to a string and print it
-            String text = new String(buffer);
-            Toast.makeText(this, text, Toast.LENGTH_SHORT).show();
-            TextView txt = findViewById(R.id.textView);
-            txt.setText(text.toString());
+        String pattern = "Number:([0-9]*)";
+        Pattern p = Pattern.compile(pattern);
+
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(file));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                Matcher m = p.matcher(line);
+                if (m.find()) {
+                    String phoneNumber = m.group(1);
+                    contactNumbersForMessage.add(phoneNumber);
+                }
+            }
+            reader.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
-
+        Toast.makeText(this, contactNumbersForMessage.toString(), Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(MainActivity.this, MessageActivity.class);
+        startActivity(intent);
     }
-
 }

@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context=".MessageActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -20,34 +20,32 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="#3F51B5"
-            android:editable="false"
             android:fontFamily="serif"
             android:gravity="center"
             android:padding="10dp"
-            android:text="Select Contacts"
+            android:text="SOS Message"
             android:textColor="@color/white"
             android:textSize="24sp"
             android:textStyle="bold" />
 
-        <ListView
-            android:id="@+id/list_view"
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
-            android:layout_height="500dp" />
+            android:layout_height="250dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/inputMessage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Type an emergency message here..." />
+        </com.google.android.material.textfield.TextInputLayout>
 
         <Button
             android:id="@+id/button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|center"
-            android:onClick="readFile"
-            android:text="Next" />
-
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Next"
-            android:onClick="nextActivity"
-        />
+            android:onClick="readInputMessage"
+            android:text="Submit" />
 
 
     </LinearLayout>
