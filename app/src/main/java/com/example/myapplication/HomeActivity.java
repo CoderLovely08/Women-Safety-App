@@ -11,33 +11,58 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Criteria;
+import android.location.Geocoder;
+import android.location.Location;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.telephony.SmsManager;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ProgressBar;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.Toast;
+
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.LocationBias;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.api.model.PlaceLikelihood;
+import com.google.android.libraries.places.api.model.RectangularBounds;
+import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest;
+import com.google.android.libraries.places.api.net.FindCurrentPlaceResponse;
+import com.google.android.libraries.places.api.net.PlacesClient;
+import com.google.android.material.textfield.TextInputEditText;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class HomeActivity extends AppCompatActivity {
 
     private static final int PERMISSION_REQUEST_CODE = 1;
-    String[] PERMISSIONS = {
-            Manifest.permission.SEND_SMS,
-            Manifest.permission.READ_CONTACTS,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE,
-            Manifest.permission.CALL_PHONE
-    };
+    String[] PERMISSIONS = {Manifest.permission.SEND_SMS, Manifest.permission.READ_CONTACTS, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CALL_PHONE, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION};
 
     private static boolean flag = false;
 
@@ -49,6 +74,12 @@ public class HomeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
+        if (!hasPermissions(this, PERMISSIONS)) {
+            ActivityCompat.requestPermissions(this, PERMISSIONS, PERMISSION_REQUEST_CODE);
+        } else {
+            flag = true;
+        }
+
         SharedPreferences preferences = getSharedPreferences(PREFERENCES_NAME, MODE_PRIVATE);
         boolean isFirstLaunch = preferences.getBoolean(FIRST_LAUNCH, true);
 
@@ -58,29 +89,18 @@ public class HomeActivity extends AppCompatActivity {
             editor.putBoolean(FIRST_LAUNCH, false);
             editor.apply();
         }
-
-        if (!hasPermissions(this, PERMISSIONS)) {
-            ActivityCompat.requestPermissions(this, PERMISSIONS, PERMISSION_REQUEST_CODE);
-        } else {
-            flag = true;
-        }
-
-
-
     }
 
     private void showAlertDialogue() {
-        String[] steps = {"Step 1: Click on Edit Alert", "Step 2: Select trusted contacts (max 5)", "Step 3: Enter an emergency message and hit submit."};
+        String[] steps = {"Step 1: Click on Edit Alert", "Step 2: Select trusted contacts (max 5)", "Step 3: Enter an emergency message and hit submit.", "In case of emergency either click One tap 'Send Alert' or click on 'Services' to view nearby emergency services to your location."};
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("How to Use the App")
-                .setItems(steps, null)
-                .setPositiveButton("Got it!", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        // your code here
-                    }
-                });
+        builder.setTitle("How to Use the App").setItems(steps, null).setPositiveButton("Got it!", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                // your code here
+            }
+        });
         AlertDialog dialog = builder.create();
         dialog.show();
     }
@@ -126,9 +146,9 @@ public class HomeActivity extends AppCompatActivity {
     public void SendAlert(View v) {
         File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "ContactsData.txt");
         File messageFile = new File(getFilesDir(), "MessageFile.txt");
-        if(!file.exists() || !messageFile.exists()){
+        if (!file.exists() || !messageFile.exists()) {
             Toast.makeText(this, "Create a new alert by clicking Edit alert!", Toast.LENGTH_SHORT).show();
-        }else sendSMSAlert();
+        } else sendSMSAlert();
     }
 
     private void phoneCallAlert(String phoneNumber) {
@@ -138,10 +158,10 @@ public class HomeActivity extends AppCompatActivity {
     }
 
 
-    public void sendSMSAlert(){
+    public void sendSMSAlert() {
         ArrayList<String> contactNumbersForMessage = new ArrayList<>();
-        File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "ContactsData.txt");
-
+//        File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "ContactsData.txt");
+        File file = new File(this.getFilesDir(), "ContactsData.txt");
         String pattern = "(?<=Number:).*";
         Pattern p = Pattern.compile(pattern);
 
@@ -193,5 +213,92 @@ public class HomeActivity extends AppCompatActivity {
 
         Toast.makeText(this, "Sending alert!!!", Toast.LENGTH_SHORT).show();
         phoneCallAlert(contactNumbersForMessage.get(0));
+    }
+
+    public void navigateServices(View view) {
+
+        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
+        // Define a criteria object to retrieve provider
+        Criteria criteria = new Criteria();
+
+        // Get the name of the best provider
+        String provider = locationManager.getBestProvider(criteria, true);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        Location myLocation = locationManager.getLastKnownLocation(provider);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(HomeActivity.this);
+        builder.setTitle("Select an emergency type");
+        builder.setMessage("Please choose one of the following options:");
+
+        LayoutInflater inflater = HomeActivity.this.getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.service_layout, null);
+        builder.setView(dialogView);
+
+        RadioGroup radioGroup = dialogView.findViewById(R.id.radioGroupService);
+
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                // do something when user click OK
+                int selectedId = radioGroup.getCheckedRadioButtonId();
+                if (selectedId == -1) {
+                    Toast.makeText(HomeActivity.this, "Please select an option", Toast.LENGTH_SHORT).show();
+                } else {
+                    RadioButton selectedRadioButton = dialogView.findViewById(selectedId);
+
+                    String selectedOption = selectedRadioButton.getText().toString();
+//                    if (myLocation != null) {
+//                        double latitude = myLocation.getLatitude();
+//                        double longitude = myLocation.getLongitude();
+                        String query = "";
+
+                        switch (selectedOption) {
+                            case "Nearby Hospitals":
+                                query = "hospital";
+                                break;
+                            case "Police Station":
+                                query = "police station";
+                                break;
+                            case "Fire Department":
+                                query = "fire department";
+                                break;
+                            case "Medical/Pharmacy":
+                                query = "pharmacy";
+                                break;
+                        }
+                        query += "&radius=5000";
+                        Uri location = Uri.parse("geo:" + 0 + "," + 0 + "?q=" + query);
+                        Intent mapIntent = new Intent(Intent.ACTION_VIEW, location);
+                        startActivity(mapIntent);
+//                    }
+                }
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                // do something when user click Cancel
+                Toast.makeText(HomeActivity.this, "Cancelled", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        final AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    public void test(View v){
+        Uri location = Uri.parse("geo:" + 0 + "," + 0 + "?q=" + "hospital");
+        Intent mapIntent = new Intent(Intent.ACTION_VIEW, location);
+        startActivity(mapIntent);
     }
 }

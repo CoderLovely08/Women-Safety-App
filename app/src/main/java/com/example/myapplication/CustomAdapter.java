@@ -51,8 +51,8 @@ public class CustomAdapter extends BaseAdapter {
         view = inflater.inflate(R.layout.custom_list, null);
         CheckBox checkBox = view.findViewById(R.id.checkbox);
         checkBox.setText(model.get(i).getContactName().toString());
-//        File file = new File(context.getFilesDir(), "ContactsData.txt");
-        File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "ContactsData.txt");
+        File file = new File(context.getFilesDir(), "ContactsData.txt");
+//        File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "ContactsData.txt");
         if (file.exists()) {
             System.out.println("Existing file deleted");
             file.delete();
@@ -62,15 +62,8 @@ public class CustomAdapter extends BaseAdapter {
             public void onClick(View view) {
                 if (checkBox.isChecked()) {
                     try {
-
-                        File file1 = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "my_file.txt");
-                        if (file1.exists()) System.out.println("New file saved");
-                        else System.out.println(file1.getAbsolutePath());
-                        file1.createNewFile();
-                        System.out.println(file1.getAbsolutePath());
-//                        File file = new File(context.getFilesDir(), "ContactsData.txt");
-                        File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "ContactsData.txt");
-
+                       file.createNewFile();
+                        System.out.println(file.getAbsolutePath());
                         FileOutputStream outputStream = new FileOutputStream(file, true);
 
                         String contactName = model.get(i).getContactName();

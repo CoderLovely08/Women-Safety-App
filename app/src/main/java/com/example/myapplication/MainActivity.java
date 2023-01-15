@@ -81,8 +81,17 @@ public class MainActivity extends AppCompatActivity {
                     while (pCur.moveToNext()) {
                         String phoneNo =
                                 pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-                        mymodel = new ContactModel(name, phoneNo);
-                        nameList.add(mymodel);
+                        boolean isExist = false;
+                        for (ContactModel model : nameList) {
+                            if (model.getContactName().equalsIgnoreCase(name)) {
+                                isExist = true;
+                                break;
+                            }
+                        }
+                        if (!isExist) {
+                            mymodel = new ContactModel(name, phoneNo);
+                            nameList.add(mymodel);
+                        }
                     }
 
                     pCur.close();
@@ -93,10 +102,10 @@ public class MainActivity extends AppCompatActivity {
             cur.close();
         }
         return nameList;
+
     }
 
     public void readFile(View v) {
-//        File file = new File(getFilesDir(), "ContactsData.txt");
         File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "ContactsData.txt");
         ArrayList<String> contactNumbersForMessage = new ArrayList<>();
 
@@ -118,7 +127,6 @@ public class MainActivity extends AppCompatActivity {
         } catch (IOException e) {
             e.printStackTrace();
         }
-//        Toast.makeText(this, contactNumbersForMessage.toString(), Toast.LENGTH_SHORT).show();
         Intent intent = new Intent(MainActivity.this, MessageActivity.class);
         startActivity(intent);
     }
