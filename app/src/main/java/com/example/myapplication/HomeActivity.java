@@ -22,6 +22,8 @@ import android.os.Environment;
 import android.telephony.SmsManager;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
@@ -74,6 +76,8 @@ public class HomeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
         if (!hasPermissions(this, PERMISSIONS)) {
             ActivityCompat.requestPermissions(this, PERMISSIONS, PERMISSION_REQUEST_CODE);
         } else {
@@ -89,6 +93,33 @@ public class HomeActivity extends AppCompatActivity {
             editor.putBoolean(FIRST_LAUNCH, false);
             editor.apply();
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_home, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.action_logout) {
+            // Clear the saved login information
+            SharedPreferences.Editor editor = getSharedPreferences("loginPreference",Context.MODE_PRIVATE).edit();
+            editor.putBoolean("is_logged_in",false);
+            editor.clear();
+            editor.apply();
+
+            // Redirect to the login page
+            Intent intent = new Intent(this, LoginActivity.class);
+            startActivity(intent);
+            finish();
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     private void showAlertDialogue() {
@@ -260,26 +291,26 @@ public class HomeActivity extends AppCompatActivity {
 //                    if (myLocation != null) {
 //                        double latitude = myLocation.getLatitude();
 //                        double longitude = myLocation.getLongitude();
-                        String query = "";
+                    String query = "";
 
-                        switch (selectedOption) {
-                            case "Nearby Hospitals":
-                                query = "hospital";
-                                break;
-                            case "Police Station":
-                                query = "police station";
-                                break;
-                            case "Fire Department":
-                                query = "fire department";
-                                break;
-                            case "Medical/Pharmacy":
-                                query = "pharmacy";
-                                break;
-                        }
-                        query += "&radius=5000";
-                        Uri location = Uri.parse("geo:" + 0 + "," + 0 + "?q=" + query);
-                        Intent mapIntent = new Intent(Intent.ACTION_VIEW, location);
-                        startActivity(mapIntent);
+                    switch (selectedOption) {
+                        case "Nearby Hospitals":
+                            query = "hospital";
+                            break;
+                        case "Police Station":
+                            query = "police station";
+                            break;
+                        case "Fire Department":
+                            query = "fire department";
+                            break;
+                        case "Medical/Pharmacy":
+                            query = "pharmacy";
+                            break;
+                    }
+                    query += "&radius=5000";
+                    Uri location = Uri.parse("geo:" + 0 + "," + 0 + "?q=" + query);
+                    Intent mapIntent = new Intent(Intent.ACTION_VIEW, location);
+                    startActivity(mapIntent);
 //                    }
                 }
             }
@@ -296,7 +327,7 @@ public class HomeActivity extends AppCompatActivity {
         dialog.show();
     }
 
-    public void test(View v){
+    public void test(View v) {
         Uri location = Uri.parse("geo:" + 0 + "," + 0 + "?q=" + "hospital");
         Intent mapIntent = new Intent(Intent.ACTION_VIEW, location);
         startActivity(mapIntent);
