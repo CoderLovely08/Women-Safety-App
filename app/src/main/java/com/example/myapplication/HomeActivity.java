@@ -169,17 +169,19 @@ public class HomeActivity extends AppCompatActivity {
         if (flag) {
             Intent intent = new Intent(HomeActivity.this, MainActivity.class);
             startActivity(intent);
+            finish();
         } else {
             ActivityCompat.requestPermissions(this, PERMISSIONS, PERMISSION_REQUEST_CODE);
         }
     }
 
     public void SendAlert(View v) {
-        File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "ContactsData.txt");
-        File messageFile = new File(getFilesDir(), "MessageFile.txt");
-        if (!file.exists() || !messageFile.exists()) {
-            Toast.makeText(this, "Create a new alert by clicking Edit alert!", Toast.LENGTH_SHORT).show();
-        } else sendSMSAlert();
+        SharedPreferences sharedPreferences = getSharedPreferences("loginPreference", Context.MODE_PRIVATE);
+
+        List<ContactModel> contacts = new DataBaseHelper(this).getAllContacts(sharedPreferences.getString("userEmail", ""));
+        if(contacts.size()>0) sendSMSAlert();
+        else Toast.makeText(this, "You haven't selected any emergency contacts", Toast.LENGTH_SHORT).show();
+
     }
 
     private void phoneCallAlert(String phoneNumber) {
@@ -190,27 +192,16 @@ public class HomeActivity extends AppCompatActivity {
 
 
     public void sendSMSAlert() {
-        ArrayList<String> contactNumbersForMessage = new ArrayList<>();
-//        File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "ContactsData.txt");
-        File file = new File(this.getFilesDir(), "ContactsData.txt");
-        String pattern = "(?<=Number:).*";
-        Pattern p = Pattern.compile(pattern);
+        SharedPreferences sharedPreferences = getSharedPreferences("loginPreference", Context.MODE_PRIVATE);
 
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(file));
-            String line;
-            while ((line = reader.readLine()) != null) {
-                Matcher m = p.matcher(line);
-                if (m.find()) {
-                    String phoneNumber = m.group();
-                    System.out.println(phoneNumber);
-                    contactNumbersForMessage.add(phoneNumber);
-                }
-            }
-            reader.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+        List<ContactModel> contacts = new DataBaseHelper(this).getAllContacts(sharedPreferences.getString("userEmail", ""));
+
+        ArrayList<String> contactNumbersForMessage = new ArrayList<>();
+
+        for(ContactModel model: contacts){
+            contactNumbersForMessage.add(model.getContactNumber());
         }
+
         Collections.reverse(contactNumbersForMessage);
 
         File messageFile = new File(getFilesDir(), "MessageFile.txt");

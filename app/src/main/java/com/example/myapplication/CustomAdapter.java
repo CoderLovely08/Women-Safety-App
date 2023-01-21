@@ -1,6 +1,7 @@
 package com.example.myapplication;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Environment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -51,63 +52,39 @@ public class CustomAdapter extends BaseAdapter {
         view = inflater.inflate(R.layout.custom_list, null);
         CheckBox checkBox = view.findViewById(R.id.checkbox);
         checkBox.setText(model.get(i).getContactName().toString());
-        File file = new File(context.getFilesDir(), "ContactsData.txt");
-//        File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "ContactsData.txt");
-        if (file.exists()) {
-            System.out.println("Existing file deleted");
-            file.delete();
-        }
+
+        String contactName = model.get(i).getContactName();
+        String contactNumber = model.get(i).getContactNumber();
+
+        SharedPreferences sharedPreferences = context.getSharedPreferences("loginPreference", Context.MODE_PRIVATE);
+
+        DataBaseHelper dataBaseHelper = new DataBaseHelper(context);
         checkBox.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (checkBox.isChecked()) {
                     try {
-                       file.createNewFile();
-                        System.out.println(file.getAbsolutePath());
-                        FileOutputStream outputStream = new FileOutputStream(file, true);
-
-                        String contactName = model.get(i).getContactName();
-                        String contactNumber = model.get(i).getContactNumber();
-
-                        String pattern = "Number:([0-9]*)";
-                        String strippedPhoneNumber = contactNumber.replaceAll(pattern, "");
-
-                        String data = "Name:" + contactName + " Number:" + strippedPhoneNumber + "\n";
-                        System.out.println(data);
-                        String line;
-                        BufferedReader reader = new BufferedReader(new FileReader(file));
-                        boolean found = false;
-                        while ((line = reader.readLine()) != null) {
-                            if (line.trim().equals(data.trim())) {
-                                found = true;
-                                break;
-                            }
-                        }
-                        reader.close();
-
-                        if (!found) {
-                            System.out.println("Data: " + data + " -----" + strippedPhoneNumber);
-                            outputStream.write(data.getBytes());
-                            outputStream.close();
-                        }
-
-                        if (file.exists()) {
-                            // File was saved successfully
+                        boolean success = dataBaseHelper.addContact(new ContactModel(-1, contactName, contactNumber), sharedPreferences.getString("userEmail", ""));
+                        if (success)
                             Toast.makeText(context, "Contact Added", Toast.LENGTH_SHORT).show();
-                        } else {
-                            // File was not saved
+                        else
                             Toast.makeText(context, "Unable to add contact", Toast.LENGTH_SHORT).show();
-                        }
-                    } catch (FileNotFoundException e) {
-                        // File could not be created
-                        Toast.makeText(context, "Unable to Add Contact", Toast.LENGTH_SHORT).show();
-                        e.printStackTrace();
-                    } catch (IOException e) {
+
+                    } catch (Exception e) {
                         // Error writing to file
-                        Toast.makeText(context, "Unable to Write Contact", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(context, "Unable to Add Contact", Toast.LENGTH_SHORT).show();
                         e.printStackTrace();
                     }
                 }
+//                ----------------------------------------------------------------------------------
+//                                  To add this thing later
+//                ----------------------------------------------------------------------------------
+//                }else if (!checkBox.isChecked()){
+//                    DataBaseHelper dataBaseHelper1 =  new DataBaseHelper(context);
+//                    boolean success = dataBaseHelper1.deleteContact(contactName, sharedPreferences.getString("userEmail", ""));
+//                    if(success) Toast.makeText(context, "Contact removed", Toast.LENGTH_SHORT).show();
+//                    else Toast.makeText(context, "Unable to remove Contact", Toast.LENGTH_SHORT).show();
+//                }
             }
         });
         return view;

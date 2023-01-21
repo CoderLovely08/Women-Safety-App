@@ -34,6 +34,7 @@ public class LoginActivity extends AppCompatActivity {
     public void redirectSignup(View view) {
         Intent intent = new Intent(LoginActivity.this, SignupActivity.class);
         startActivity(intent);
+        finish();
     }
 
     public void redirectHome() {
@@ -43,8 +44,8 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     public void onLoginClicked(View view) {
-        String email = mEmailFieldLogin.getText().toString();
-        String password = mPasswordFieldLogin.getText().toString();
+        String email = mEmailFieldLogin.getText().toString().trim();
+        String password = mPasswordFieldLogin.getText().toString().trim();
 
         if (email.isEmpty()) {
             Toast.makeText(this, "Email field is required", Toast.LENGTH_SHORT).show();
@@ -56,34 +57,24 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
-        File file = new File(getFilesDir(), "signup_info.txt");
-        if (!file.exists()) {
-            Toast.makeText(this, "Signup information not found", Toast.LENGTH_SHORT).show();
-            return;
+
+        try {
+            DataBaseHelper dataBaseHelper = new DataBaseHelper(this);
+            User user = dataBaseHelper.getUser(email,password);
+            System.out.println(user);
+            if(user!=null){
+                Toast.makeText(this, "Login successful", Toast.LENGTH_SHORT).show();
+                // Save login information in SharedPreferences
+                SharedPreferences.Editor editor = getSharedPreferences("loginPreference", Context.MODE_PRIVATE).edit();
+                editor.putBoolean("is_logged_in", true);
+                editor.putInt("userId",user.getId());
+                editor.putString("userEmail",user.getEmail());
+                editor.apply();
+                redirectHome();
+            }else Toast.makeText(this, "Incorrect credentials!", Toast.LENGTH_SHORT).show();
+        }catch (Exception e){
+            Toast.makeText(this, "Error getting user", Toast.LENGTH_SHORT).show();
         }
 
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file)))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                if (line.startsWith("Email: ") && line.substring(7).equals(email)) {
-                    while ((line = br.readLine()) != null) {
-                        if (line.startsWith("Password: ") && line.substring(10).equals(password)) {
-                            Toast.makeText(this, "Login successful", Toast.LENGTH_SHORT).show();
-                            // Save login information in SharedPreferences
-                            SharedPreferences.Editor editor = getSharedPreferences("loginPreference",Context.MODE_PRIVATE).edit();
-                            editor.putBoolean("is_logged_in", true);
-                            editor.apply();
-                            redirectHome();
-                            return;
-                        }
-                    }
-                    Toast.makeText(this, "Incorrect password", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-            }
-            Toast.makeText(this, "Email not found", Toast.LENGTH_SHORT).show();
-        } catch (IOException e) {
-            Toast.makeText(this, "Error reading signup info", Toast.LENGTH_SHORT).show();
-        }
     }
 }

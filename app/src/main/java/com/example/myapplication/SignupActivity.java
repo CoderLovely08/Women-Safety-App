@@ -46,10 +46,10 @@ public class SignupActivity extends AppCompatActivity {
     }
 
     public void onSignupClicked(View view) {
-        String name = mNameField.getText().toString();
-        String email = mEmailField.getText().toString();
-        String password = mPasswordField.getText().toString();
-        String confirmPassword = mConfirmPasswordField.getText().toString();
+        String name = mNameField.getText().toString().trim();
+        String email = mEmailField.getText().toString().trim();
+        String password = mPasswordField.getText().toString().trim();
+        String confirmPassword = mConfirmPasswordField.getText().toString().trim();
 
         if (name.isEmpty()) {
             Toast.makeText(this, "Name field is required", Toast.LENGTH_SHORT).show();
@@ -70,16 +70,28 @@ public class SignupActivity extends AppCompatActivity {
             Toast.makeText(this, "Passwords do not match", Toast.LENGTH_SHORT).show();
             return;
         }
-
-        File file = new File(getFilesDir(), "signup_info.txt");
-        try (FileOutputStream fos = new FileOutputStream(file, true)) {
-            String info = "Name: " + name + "\nEmail: " + email + "\nPassword: " + password + "\n\n";
-            fos.write(info.getBytes());
-            Toast.makeText(this, "Signup successful", Toast.LENGTH_SHORT).show();
-            redirectLogin();
-        } catch (IOException e) {
-            Toast.makeText(this, "Error saving signup info", Toast.LENGTH_SHORT).show();
+        DataBaseHelper dataBaseHelper = new DataBaseHelper(this);
+        try {
+            boolean success = dataBaseHelper.addUser(new User(-1, name, email, password));;
+            if(success) {
+                Toast.makeText(this, "Signup successful", Toast.LENGTH_SHORT).show();
+                redirectLogin();
+            }
+            else Toast.makeText(this, "Email already exists", Toast.LENGTH_SHORT).show();
+        }catch (Exception e){
+            Toast.makeText(this,"Error, please try again!", Toast.LENGTH_SHORT).show();
         }
+
+
+//        File file = new File(getFilesDir(), "signup_info.txt");
+//        try (FileOutputStream fos = new FileOutputStream(file, true)) {
+//            String info = "Name: " + name + "\nEmail: " + email + "\nPassword: " + password + "\n\n";
+//            fos.write(info.getBytes());
+//            Toast.makeText(this, "Signup successful", Toast.LENGTH_SHORT).show();
+//            redirectLogin();
+//        } catch (IOException e) {
+//            Toast.makeText(this, "Error saving signup info", Toast.LENGTH_SHORT).show();
+//        }
     }
 
     public void redirectLogin(View view) {
